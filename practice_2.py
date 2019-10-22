@@ -3,10 +3,10 @@ import sys
 from os import system, name
 from pathlib import Path
 
-local_folder = Path(__file__).parent
-tokens_fl = local_folder / 'data/tokens.txt'
-reserved_words_fl = local_folder / 'data/reserved_words.txt'
-regular_expresions_fl = local_folder / 'data/regular_expresions.txt'
+LOCAL_FOLDER = Path(__file__).parent
+TOKENS_FL = LOCAL_FOLDER / 'data/tokens.txt'
+RESERVED_WORDS_FL = LOCAL_FOLDER / 'data/reserved_words.txt'
+REGULAR_EXPRESIONS_FL = LOCAL_FOLDER / 'data/regular_expresions.txt'
 
 def cls():
     # for windows
@@ -18,16 +18,16 @@ def cls():
 
 def load_data():
     global tk_dic, re_dic, rw_list
-    with open(tokens_fl, 'r') as fl:
+    with open(TOKENS_FL, 'r') as fl:
         tk_dic = dict([[x.strip() for x in line.split('\t')] for line in fl])
-    with open(regular_expresions_fl, 'r') as fl:
+    with open(REGULAR_EXPRESIONS_FL, 'r') as fl:
         re_dic = dict([[x.strip() for x in line.split('\t')] for line in fl])
-    with open(reserved_words_fl, 'r') as fl:
+    with open(RESERVED_WORDS_FL, 'r') as fl:
         rw_list = set([x.strip() for x in fl.readlines()])
 
 
 def lexical_error(position):
-    with open(analyzed_fl, 'a') as fl:
+    with open(ANALYZED_FL, 'a') as fl:
         output = '>>> Error lexico(linea: {}, posicion: {})\n'\
                 .format(position[0], position[1])
         fl.write(output + '\n')
@@ -35,7 +35,7 @@ def lexical_error(position):
         sys.exit()
 
 def register_token(token, position):
-    with open(analyzed_fl, 'a') as fl:
+    with open(ANALYZED_FL, 'a') as fl:
         if type(token[0]) is int:
             if token[1] in tk_dic:
                 tk = tk_dic[token[1]]
@@ -100,22 +100,22 @@ def analyze(string, position):
 
 
 def main():
-    global analyzed_fl, local_folder, analyzed_fl
+    global ANALYZED_FL, LOCAL_FOLDER, ANALYZED_FL
 
     cls()
     name_file = input("Ingrese el nombre del archivo a analizar:\n")
     new_name = name_file.split('.')[0]
     new_name = new_name + '_alz.txt'
     
-    input_fl = local_folder / 'test'/ name_file
-    analyzed_fl = local_folder / 'test' / new_name
+    INPUT_FL = LOCAL_FOLDER / 'test'/ name_file
+    ANALYZED_FL = LOCAL_FOLDER / 'test' / new_name
 
     load_data()
     
-    auxfl = open(analyzed_fl, 'w')
+    auxfl = open(ANALYZED_FL, 'w')
     auxfl.close()
     position = [1, 1]
-    with open(input_fl, 'r') as fl:
+    with open(INPUT_FL, 'r') as fl:
         for line in fl:
             position[1] = 1
             analyze(line, position)
