@@ -29,28 +29,34 @@ def get_grammar():
             grammar_dic[temp_key].append(temp_rules)
     return grammar_dic
 
-def set_of_first(grammar_dic):
-    first_dict = dict()
-    for key, rule_list in grammar_dic.items():
+def set_of_first(grammar_dic, first_dict, key):
+    if key in first_dict:
+        return
+    else:
+        rule_list = grammar_dic[key]
         first_set = set()
         for rules_tuple in rule_list:
             for rule in rules_tuple:
-                split_rule = rule.split(' ', 1)
+                split_rule = rule.split(' ')
                 first = split_rule[0]
-                first_set.add(first)
+                if re.match("(^\'.*\'.*)", first) is None:
+                    temp_set = set_of_first(grammar_dic, first_dict, first)
+                    temp_set.discard(' ')
+                    first_set = first_set | temp_set
+                else:
+                    first_set.add(first)
         first_dict[key] = first_set
-    
-    for key, value in first_dict.items():
-        for first in value:
-            if re.match("(^\'.*\'.*|^\".*\".*)", first) is None:
-
-
+        print(first_dict)
+        return first_set
 
 
 def main():
     cls()
     grammar_dic = get_grammar()
-    set_of_first(grammar_dic)
+
+    first_dict = dict()
+    for key in grammar_dic:
+        set_of_first(grammar_dic, first_dict, key)
     
 
 if __name__ == '__main__':
