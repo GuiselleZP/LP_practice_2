@@ -1,3 +1,4 @@
+import re
 import sys
 from os import system, name
 from pathlib import Path
@@ -14,7 +15,7 @@ def cls():
         system('clear')
 
 def get_grammar():
-    grammar_dic = {} 
+    grammar_dic = dict() 
     with open (GRAMAR_FL, 'r') as fl:
         for line in fl:
             line = line.strip()
@@ -22,15 +23,34 @@ def get_grammar():
             temp_key = line[0]
             temp_rules = tuple(line[1].split(' | '))
 
-            if grammar_dic.get(temp_key) == None:
+            if grammar_dic.get(temp_key) is None:
                 grammar_dic[temp_key] = []
             
             grammar_dic[temp_key].append(temp_rules)
     return grammar_dic
 
+def set_of_first(grammar_dic):
+    first_dict = dict()
+    for key, rule_list in grammar_dic.items():
+        first_set = set()
+        for rules_tuple in rule_list:
+            for rule in rules_tuple:
+                split_rule = rule.split(' ', 1)
+                first = split_rule[0]
+                first_set.add(first)
+        first_dict[key] = first_set
+    
+    for key, value in first_dict.items():
+        for first in value:
+            if re.match("(^\'.*\'.*|^\".*\".*)", first) is None:
+
+
+
+
 def main():
     cls()
     grammar_dic = get_grammar()
+    set_of_first(grammar_dic)
     
 
 if __name__ == '__main__':
