@@ -1,6 +1,6 @@
-S	->	'a' A D
-A	->	D B 'c' | 'e'
-A	->	'h'
-B	->	'1' | '2'
-D	->	'd'
-D	->	''
+A	->	B C
+A	->	'bad'
+B	->	'big' C 'boss'
+B	->	''
+C	->	'cat'
+C	->	'cow'

@@ -32,8 +32,8 @@ def get_grammar():
 def get_set_of_first(key, grammar_dic, first_dic):
     if key not in first_dic:
         first_set = set()
-        for rules_tuple in grammar_dic[key]:
-            for rule in rules_tuple:
+        for rules_tup in grammar_dic[key]:
+            for rule in rules_tup:
                 split_rule = rule.split(' ')
                 first = split_rule[0]
                 if re.match("(^\'.*\'.*)", first) is None:
@@ -44,23 +44,36 @@ def get_set_of_first(key, grammar_dic, first_dic):
                         aux = get_set_of_first(first, grammar_dic, first_dic)
                         set_2 = aux[1]
                         set_1 = set_1 | set_2
-                        set_1.discard(' ')
+                        set_1.discard("''")
                     first_set = first_set | set_1
                 else:
                     first_set.add(first)
         first_dic[key] = first_set
         return (first_dic, first_set)
 
+def get_set_of_seconds(key, grammar_dic, seconds_dic):
+    if key not in seconds_dic:
+        seconds_set = set()
 
 def get_first_dic(grammar_dic):
     first_dic = dict()
     for key in grammar_dic:
-        aux_dic = get_set_of_first(key, grammar_dic, first_dic)
-        if aux_dic is None:
-            break
-        first_dic = aux_dic[0]
+        if key not in first_dic:
+            aux_dic = get_set_of_first(key, grammar_dic, first_dic)
+            if aux_dic is None:
+                break
+            first_dic = aux_dic[0]
     return first_dic
 
+def get_seconds_dic(grammar_dic):
+    seconds_dic = dict()
+    for key in grammar_dic:
+        if key not in seconds_dic:
+            aux_dic = get_set_of_seconds(key, grammar_dic, seconds_dic)
+            if aux_dic is None:
+                break
+            seconds_dic = aux_dic[0]
+        return seconds_dic
 
 def main():
     cls()
