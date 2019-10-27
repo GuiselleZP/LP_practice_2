@@ -1,125 +1,75 @@
-import re
-import sys
 from os import system, name
-from pathlib import Path
 
-LOCAL_FOLDER = Path(__file__).parent
-TOKENS_FL = LOCAL_FOLDER / 'data/tokens.txt'
-RESERVED_WORDS_FL = LOCAL_FOLDER / 'data/reserved_words.txt'
-REGULAR_EXPRESIONS_FL = LOCAL_FOLDER / 'data/regular_expresions.txt'
 
 def cls():
     # for windows
     if name == 'nt':
         system('cls')
-    #for mac and linux (os.name = 'posix')
+    # for mac and linux (os.name = 'posix')
     else:
         system('clear')
 
-def load_data():
-    global tk_dic, re_dic, rw_list
-    with open(TOKENS_FL, 'r') as fl:
-        tk_dic = dict([[x.strip() for x in line.split('\t')] for line in fl])
-    with open(REGULAR_EXPRESIONS_FL, 'r') as fl:
-        re_dic = dict([[x.strip() for x in line.split('\t')] for line in fl])
-    with open(RESERVED_WORDS_FL, 'r') as fl:
-        rw_list = set([x.strip() for x in fl.readlines()])
+
+class Rule():
+    def __init__(self, rule):
+        self.__rule = rule
+        self.__split_rule = rule.split(' ')
+        self.__len = len(self.__split_rule)
+
+    def get_symbol(self, index):
+        symbol = None
+        if index < self.__len:
+            symbol = self.__split_rule[index]
+        return symbol
+
+    def get_first(self):
+        return self.__split_rule[0]
+
+    def get_second(self, symbol):
+        second = None
+        for index in range(self.__len):
+            if self.__split_rule[index] == symbol:
+                index += 1
+                if index < self.__len:
+                    second = self.__split_rule[index]
+        return second
 
 
-def lexical_error(position):
-    with open(ANALYZED_FL, 'a') as fl:
-        output = '>>> Error lexico(linea: {}, posicion: {})\n'\
-                .format(position[0], position[1])
-        fl.write(output + '\n')
-        print(output)
-        sys.exit()
+class ImportantSets():
+    def __init__(self, grammar):
+        self.__grammar = self.__get_grammar()
+        self.__set_of_the_firsts = set()
+        self.__set_of_the_seconds = set()
+        self.__prediction_set = set()
 
-def register_token(token, position):
-    with open(ANALYZED_FL, 'a') as fl:
-        if type(token[0]) is int:
-            if token[1] in tk_dic:
-                tk = tk_dic[token[1]]
-            else:
-                tk = token[1]
-            output = "<{}, {}, {}>".format(tk, position[0], position[1])
-        else:
-            output = "<{}, {}, {}, {}>".format(token[0], token[1],position[0],\
-                                        position[1])
-        fl.write(output + '\n');
-        print(output)
+    def __get_grammar(grammar):
+        grammar_dict = dict()
+        for line in grammar:
+            line = line.strip()
+            line = line.split("\t->\t")
+            key = line[0]
+            rules = tuple(line[1].split(" | "))
 
-def analyze(string, position):
-    identifier = re.compile(re_dic['id'], re.I)
-    number = re.compile(re_dic['tk_num'])
-    array = re.compile(re_dic['tk_cadena'])
-    operators = re.compile(re_dic['operators'])
-    ignore = re.compile(re_dic['ignore'])
-    token = []
-    separator = 0
+            if grammar_dict.get(key) is None:
+                grammar_dict[key] = list()
 
-    if array.match(string) is not None:
-        temp = array.match(string)
-        i = 0
-        for char in string:
-            separator += 1
-            if char == string[0]:
-                i += 1
-                if i == 2:
-                    break
-        token.append('tk_cadena')
-    elif identifier.match(string) is not None:
-        temp = re.match(identifier, string)
-        separator = temp.end()
-        if string[:separator] in rw_list:
-            token.append(0)
-        else:
-            token.append('id')
-    elif number.match(string) is not None:
-        temp = re.match(number, string)
-        separator = temp.end()
-        token.append('tk_num')
-    elif operators.match(string) is not None:
-        temp = operators.match(string)
-        separator = temp.end()
-        token.append(0)
-    elif string[0] == '\t':
-        position[1] += 4
-        return analyze(string[1:], position)
-    elif string[0] == ' ':
-        position[1] += 1
-        return analyze(string[1:], position)
-    elif ignore.match(string) is not None:
-        return
-    else:
-        return lexical_error(position)
+            grammar_dict[key].append(rules)
+        return grammar_dict
 
-    token.append(string[:separator])
-    register_token(token, position)
-    position[1] += separator
-    return analyze(string[separator:], position)
+    def __get_set_of_the_first():
+        pass
 
 
 def main():
-    global ANALYZED_FL, LOCAL_FOLDER, ANALYZED_FL
-
     cls()
-    name_file = input("Ingrese el nombre del archivo a analizar:\n")
-    new_name = name_file.split('.')[0]
-    new_name = new_name + '_alz.txt'
-    
-    INPUT_FL = LOCAL_FOLDER / 'test'/ name_file
-    ANALYZED_FL = LOCAL_FOLDER / 'test' / new_name
+    test = Rule("'a' B 'c'")
+    q = test.get_symbol(1)
+    print(q)
+    q = test.get_first()
+    print(q)
+    q = test.get_second('B')
+    print(q)
 
-    load_data()
-    
-    auxfl = open(ANALYZED_FL, 'w')
-    auxfl.close()
-    position = [1, 1]
-    with open(INPUT_FL, 'r') as fl:
-        for line in fl:
-            position[1] = 1
-            analyze(line, position)
-            position[0] += 1
 
 if __name__ == '__main__':
     main()
