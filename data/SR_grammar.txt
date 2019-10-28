@@ -1,6 +1,7 @@
 A	->	B C
-A	->	'bad'
-B	->	'big' C 'boss'
+A	->	'ant' A B
+B	->	'big' C
+B	->	'bus' A 'boss'
 B	->	''
 C	->	'cat'
 C	->	'cow'

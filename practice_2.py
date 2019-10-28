@@ -14,40 +14,14 @@ def cls():
     else:
         system('clear')
 
-
-class Rule():
-    def __init__(self, rule):
-        self.__rule = rule
-        self.__split_rule = rule.split(' ')
-        self.__len = len(self.__split_rule)
-
-    def get_symbol(self, index):
-        symbol = None
-        if index < self.__len:
-            symbol = self.__split_rule[index]
-        return symbol
-
-    def get_first(self):
-        return self.__split_rule[0]
-
-    def get_second(self, symbol):
-        second = None
-        for index in range(self.__len):
-            if self.__split_rule[index] == symbol:
-                index += 1
-                if index < self.__len:
-                    second = self.__split_rule[index]
-        return second
-
-
 class ImportantSets():
     def __init__(self, grammar):
         self.__grammar = self.__get_grammar(grammar)
         self.__dict_of_the_first = dict()
-        self.__seconds_dict = dict()
+        self.__dict_of_the_following = dict()
         self.__prediction_dict = dict()
         self.__get_dict_of_the_first()
-        self.__get_dict_of_the_seconds()
+        self.__get_dict_of_the_following()
         self.__get_prediction_dict()
 
     def __get_grammar(self, grammar):
@@ -56,57 +30,80 @@ class ImportantSets():
             line = line.strip()
             line = line.split("\t->\t")
             key = line[0]
-            rules = line[1].split(" | ")
-
-            rules_list = list()
-            for rule in rules:
-                rule = Rule(rule)
-                rules_list.append(rule)
-            rules_tupl = tuple(rules_list)
-
+            rules = tuple(line[1].split(' | '))
+            
             if grammar_dict.get(key) is None:
                 grammar_dict[key] = list()
 
-            grammar_dict[key].append(rules_tupl)
+            grammar_dict[key].append(rules)
         return grammar_dict
 
-    def __get_set_of_the_first(self, key):
-        if key not in self.__dict_of_the_first:
-            set_of_the_first = set()
-            for rules_tupl in self.__grammar[key]:
+    def __is_a_non_terminal(self, symbol):
+        if re.match("(\'.*\'.*)", symbol) is None:
+            return True
+        else:
+            return False
+        
+    def __call_first_set_non_terminal(self, symbol):
+        if symbol not in self.__dict_of_the_first:
+            set_first = set()
+            for rules_tupl in self.__grammar[symbol]:
                 for rule in rules_tupl:
-                    first = rule.get_first()
-                    if re.match("(^\'.*\'.*)", first) is None:
-                        aux_set_1 = self.__get_set_of_the_first(first)
-                        if "''" in aux_set_1:
-                            first = rule.get_symbol(1)
-                            aux_set_2 = self.__get_set_of_the_first(first)
-                            aux_set_1 = aux_set_1 | aux_set_2
-                            aux_set_1.discard("''")
-                        set_of_the_first = set_of_the_first | aux_set_1
-                    else:
-                        set_of_the_first.add(first)
-            self.__dict_of_the_first[key] = set_of_the_first
-            return set_of_the_first
+                    aux = self.__get_set_of_the_first(rule)
+                    set_first = aux | set_first
+            self.__dict_of_the_first[symbol] = set_first
+        return self.__dict_of_the_first[symbol]
 
+
+    def __get_set_of_the_first(self, rule):
+        empty_symbol = False
+        set_first = set()
+        aux_set = set()
+        aux = rule.split(' ', 1)
+        symbol = aux[0]
+
+        if self.__is_a_non_terminal(symbol):
+            aux_set = self.__call_first_set_non_terminal(symbol)
+            if "''" in aux_set:
+                empty_symbol = True
+                temp_set = aux_set
+                aux_set = set()
+                aux_set = aux_set | temp_set
+                aux_set.discard("''")
+        else:
+            if "''" == symbol:
+                aux_set.add("''")              
+            else:
+                aux_set.add(symbol)
+        set_first = set_first | aux_set
+
+        if len(aux) == 2 and empty_symbol:
+            leftover = aux[1]
+            aux_set = self.__get_set_of_the_first(leftover)
+            set_first = set_first | aux_set
+        return set_first
+                   
+                    
     def __get_dict_of_the_first(self):
         for key in self.__grammar:
             if key not in self.__dict_of_the_first:
-                self.__get_set_of_the_first(key)
+                  self.__call_first_set_non_terminal(key)
 
-    def __get_set_of_the_secods(self, key):
+    def __get_set_of_the_following(self, symbol):
         pass
-
-    def __get_dict_of_the_seconds(self):
+       
+    def __get_dict_of_the_following(self):
         pass
 
     def __get_prediction_dict(self):
         pass
+    def get_dict_of_grammar(self):
+        return self.__grammar
 
     def get_dict_of_the_first(self):
         return self.__dict_of_the_first
 
-    def get_set_of_the_secods(self):
+    def get_dict_of_the_following(self):
         pass
 
     def get_prediction_dict(self):
@@ -114,12 +111,12 @@ class ImportantSets():
 
 
 def main():
-    cls()
+    # cls()
     with open(GRAMAR_FL, 'r') as fl:
         grammar = fl.readlines()
         sets = ImportantSets(grammar)
+        print(sets.get_dict_of_grammar())
         print(sets.get_dict_of_the_first())
-
 
 if __name__ == '__main__':
     main()
