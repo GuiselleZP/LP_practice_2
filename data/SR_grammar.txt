@@ -1,7 +1,11 @@
-A	->	B C
-A	->	'ant' A B
-B	->	'big' C
-B	->	'bus' A 'boss'
+S	->	A 'uno' B C
+S	->	S 'dos'
+A	->	B C D
+A	->	A 'tres'
+A	->	''
+B	->	D 'cuatro' C 'tres'
 B	->	''
-C	->	'cat'
-C	->	'cow'
+C	->	'cinco' D B
+C	->	''
+D	->	'seis'
+D	->	''
